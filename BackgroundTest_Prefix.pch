@@ -1,0 +1,8 @@
+//
+// Prefix header for all source files of the 'BackgroundTest' target in the 'BackgroundTest' project
+//
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+    #import <UIKit/UIKit.h>
+#endif
