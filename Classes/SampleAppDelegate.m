@@ -1,15 +1,19 @@
 //
-//  BackgroundTestAppDelegate.m
-//  BackgroundTest
+//  SampleAppDelegate.m
+//  Sample Geoloqi App
 //
 //  Created by Aaron Parecki on 2011-11-16.
 //  Copyright 2011 Geoloqi.com. All rights reserved.
 //
 
-#import "BackgroundTestAppDelegate.h"
+#import "SampleAppDelegate.h"
+#import "AuthView.h"
+#import "LQClient.h"
+#import "LQConfig.h"
 
+SampleAppDelegate *appDelegate;
 
-@implementation BackgroundTestAppDelegate
+@implementation SampleAppDelegate
 
 @synthesize window;
 @synthesize tabBarController;
@@ -20,15 +24,57 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
     
+    appDelegate = self;
+
+    if([@"" isEqualToString:LQ_OAUTH_CLIENT_ID]) {
+        [[[[UIAlertView alloc] initWithTitle:@"Error!" message:@"You need an API key from developers.geoloqi.com" delegate:self cancelButtonTitle:nil otherButtonTitles:@"Visit Site", nil] autorelease] show];
+    }
+    
     // Override point for customization after application launch.
 
     // Add the tab bar controller's view to the window and display.
     [self.window addSubview:tabBarController.view];
     [self.window makeKeyAndVisible];
 
+    if([[LQClient single] isLoggedIn]) {
+
+	} else {
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(authenticationDidSucceed:)
+													 name:LQAuthenticationSucceededNotification
+												   object:nil];
+        [tabBarController presentModalViewController:[[[AuthView alloc] init] autorelease] animated:YES];
+	}
+
     return YES;
 }
 
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://developers.geoloqi.com/?utm_medium=iPhone+Sample+App"]];
+	if(![[UIApplication sharedApplication] openURL:url])
+		NSLog(@"%@%@",@"Failed to open url:",[url description]);
+}
+
+- (void)authenticationDidSucceed:(NSNotificationCenter *)notification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                    name:LQAuthenticationSucceededNotification 
+                                                  object:nil];
+
+    [[LQClient single] getPlacesWithCallback:^(NSMutableArray *places, NSError *error){
+		if(error != nil) {
+			NSLog(@"Error retrieving places: %@", error);
+		} else {
+			NSLog(@"Places callback! %@", places);
+			for(LQPlace *place in places) {
+				NSLog(@"Found place %@", place.display_name);
+			}
+		}
+	}];
+    
+    if (tabBarController.modalViewController && [tabBarController.modalViewController isKindOfClass:[AuthView class]])
+        [tabBarController dismissModalViewControllerAnimated:YES];
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     /*
