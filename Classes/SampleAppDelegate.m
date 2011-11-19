@@ -50,7 +50,7 @@ SampleAppDelegate *appDelegate;
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://developers.geoloqi.com/?utm_medium=iPhone+Sample+App"]];
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://developers.geoloqi.com/iphone?utm_medium=iPhone+Sample+App"]];
 	if(![[UIApplication sharedApplication] openURL:url])
 		NSLog(@"%@%@",@"Failed to open url:",[url description]);
 }
